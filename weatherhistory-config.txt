@@ -1,0 +1,3 @@
+DatabaseURL=jdbc:oracle:thin:hr/hr@oracle.cise.ufl.edu:1521:orcl
+Name=test
+Password=test
