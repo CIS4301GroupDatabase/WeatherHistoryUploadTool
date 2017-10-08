@@ -12,7 +12,7 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import weatherhistory.Config;
-import weatherhistory.Database;
+import weatherhistory.DatabaseService;
 import weatherhistory.UploadWorker;
 
 import javax.swing.JMenuBar;
@@ -50,7 +50,7 @@ public class MainGUI
 	private int numLines = 0;
 	private File loadedFile = null;
 	private Config config;
-	private Database database;
+	private DatabaseService database;
 
 	/**
 	 * Create the application.
@@ -58,7 +58,7 @@ public class MainGUI
 	public MainGUI(Config config) 
 	{
 		this.config = config;
-		this.database = new Database(this.config);
+		this.database = new DatabaseService(this.config);
 		initialize();
 	}
 

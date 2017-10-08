@@ -8,11 +8,11 @@ import java.sql.Statement;
 import javax.swing.JTextArea;
 
 
-public class Database 
+public class DatabaseService 
 {
 	public Config config;
 
-	public Database(Config config)
+	public DatabaseService(Config config)
 	{
 		this.config = config;
 	}
@@ -37,6 +37,4 @@ public class Database
 	{
 		connect.close();
 	}
-	
-	
 }

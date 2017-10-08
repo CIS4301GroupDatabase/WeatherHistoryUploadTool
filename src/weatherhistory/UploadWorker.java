@@ -50,7 +50,7 @@ public class UploadWorker extends SwingWorker<String, Integer>
 				}
 				else
 				{
-					// First datapoint starts here
+					// First datapoint starts here// TODO
 					// I then need to know the prober SQL commands to upload each piece of data
 					//query.executeUpdate("");
 				}
