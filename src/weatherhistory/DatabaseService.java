@@ -17,16 +17,6 @@ public class DatabaseService
 		this.config = config;
 	}
 	
-	public void initilizeDatabaseSchema(JTextArea console) throws SQLException
-	{
-		Connection connect = connectToDatabase();
-		
-		Statement query = connect.createStatement();
-		query.executeUpdate(""); // TODO add the stuffs
-		
-		disconnectFromDatabase(connect);
-	}
-	
 	public Connection connectToDatabase() throws SQLException
 	{
 		DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());

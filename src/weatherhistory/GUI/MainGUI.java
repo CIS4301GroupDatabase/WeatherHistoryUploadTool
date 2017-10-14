@@ -41,6 +41,7 @@ import javax.swing.event.CaretEvent;
 
 public class MainGUI 
 {
+	private final String version = "1.0";
 	public JTextArea console;
 	public JProgressBar progressBar;
 	public JFrame frame;
@@ -51,6 +52,8 @@ public class MainGUI
 	private File loadedFile = null;
 	private Config config;
 	private DatabaseService database;
+	
+	private String regionName = "";
 
 	/**
 	 * Create the application.
@@ -68,7 +71,7 @@ public class MainGUI
 	private void initialize() 
 	{
 		frame = new JFrame();
-		frame.setTitle("Weather History CSV Upload Tool");
+		frame.setTitle("Weather History CSV Upload Tool " + version);
 		frame.setBounds(100, 100, 656, 440);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
@@ -104,6 +107,10 @@ public class MainGUI
 			public void actionPerformed(ActionEvent e) 
 			{
 				chooseFile();
+				if (loadedFile != null)
+				{
+					openRegionDialog();
+				}
 			}
 		});
 		panel.add(btnGetFile);
@@ -196,7 +203,8 @@ public class MainGUI
 								   + "\n"
 								   + "Developed by Joseph D Sinclair in Group 1 as part of a semester long \n" 
 								   + "project for the class CIS4301 at the University of Florida. \n "
-								   + "                                            Created October 2017 \n"; 
+								   + "                                            Created October 2017 \n"
+								   + "                                                  Version " + version + " \n"; 
 				JOptionPane.showMessageDialog(frame, aboutString, "About This Program", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
@@ -244,6 +252,21 @@ public class MainGUI
 		}
 	}
 
+	private void openRegionDialog()
+	{
+		JTextField regionTextField = new JTextField(50);
+		JPanel regionPanel = new JPanel();
+		regionPanel.setLayout(new BoxLayout(regionPanel, BoxLayout.Y_AXIS));
+		regionPanel.add(new JLabel("Enter the name of the region this data belongs to:"));
+		regionPanel.add(regionTextField);
+
+		int result = JOptionPane.showConfirmDialog(null, regionPanel,"Enter the region name", JOptionPane.OK_CANCEL_OPTION);
+		if (result == JOptionPane.OK_OPTION)
+		{
+			regionName = regionTextField.getText();
+			console.append("Region name set to: " + regionName + "\n");
+		}
+	}
 	
 	private void openConfigDialog()
 	{
@@ -269,7 +292,7 @@ public class MainGUI
 			config.setName(conName.getText());
 			config.setPassword(conPass.getText());
 			config.updateConfig();
-			console.append("The config file has been updated.");
+			console.append("The config file has been updated. \n");
 		}
 	}
 	
@@ -284,7 +307,7 @@ public class MainGUI
 				Connection connect = this.database.connectToDatabase();
 				console.append("Connected. \n");
 				console.append("Creating worker. \n");
-				UploadWorker worker = new UploadWorker(connect, loadedFile, numLines);
+				UploadWorker worker = new UploadWorker(connect, loadedFile, numLines, regionName);
 				worker.addPropertyChangeListener(new PropertyChangeListener() 
 				{	
 					@Override
@@ -339,14 +362,28 @@ public class MainGUI
 				 console.append("Connected. \n");
 				 Statement query = connect.createStatement();
 				 
-				 // TODO run the schema initilization here
-				 
+	
+				 query.executeUpdate("CREATE TABLE Weather_Station (id CHAR (20), name CHAR (20), "
+								   + "PRIMARY KEY (id) )");
+				 console.append("Weather_Station table added. \n");
+				 query.executeUpdate("CREATE TABLE Location (id CHAR (20), latitude FLOAT (10), longitude FLOAT (10), region CHAR (20), "
+								   + "PRIMARY KEY (latitude, longitude), FOREIGN KEY (id) REFERENCES Weather_Station)");
+				 console.append("Location table added. \n");
+				 query.executeUpdate("CREATE TABLE Daily_Condition (id CHAR (20), conditon_date DATE, sunset_time DATE, sunrise_time DATE, avg_temperature FLOAT (5), min_temperature FLOAT (5), max_temperature FLOAT (5), "
+				 				   + "total_precipitation FLOAT (5), avg_pressure FLOAT (5), avg_wind_speed FLOAT (5), peak_wind_speed FLOAT (5), sustained_wind_speed FLOAT (5), "
+				 				   + "PRIMARY KEY (conditon_date ), FOREIGN KEY (id) REFERENCES Weather_Station)");
+				 console.append("Daily_Condition table added. \n");
+				 query.executeUpdate("CREATE TABLE Hourly_Condition (id CHAR (20), condition_date DATE, temperature FLOAT (5), precipitation FLOAT (5), wind_speed FLOAT (5), humidity FLOAT (5), pressure FLOAT (5), time DATE, "
+				 				   + "PRIMARY KEY (time), FOREIGN KEY (condition_date) REFERENCES Daily_Condition)");
+				 console.append("Hourly_Condition table added. \n");
+				
+			 
 				 console.append("Schema Initilization Completed. \n");
 				 connect.close();
 			 }
 			 catch (SQLException e) 
 			 {
-				 console.append("Connection to database failed. \n");
+				 console.append("Connection to database failed or something was wrong with the SQL commands. \n");
 				 e.printStackTrace();
 			 }
 		 }

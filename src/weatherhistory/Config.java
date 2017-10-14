@@ -12,8 +12,6 @@ import java.net.URLDecoder;
 
 public class Config 
 {
-
-	// TODO I need to create and load a config file when the program loads so we can save/store names/passwords/addresses
 	private String name = "";
 	private String password = "";
 	private String databaseURL = "jdbc:oracle:thin:hr/hr@oracle.cise.ufl.edu:1521:orcl";
