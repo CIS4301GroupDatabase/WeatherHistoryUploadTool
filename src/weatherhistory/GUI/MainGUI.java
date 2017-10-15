@@ -10,6 +10,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.DefaultCaret;
 
 import weatherhistory.Config;
 import weatherhistory.DatabaseService;
@@ -38,6 +39,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
+import java.awt.Dimension;
 
 public class MainGUI 
 {
@@ -131,6 +133,7 @@ public class MainGUI
 		panel_1.add(btnUpload);
 		
 		this.progressBar = new JProgressBar();
+		progressBar.setPreferredSize(new Dimension(350, 14));
 		panel_1.add(this.progressBar);
 		
 		JPanel panel_2 = new JPanel();
@@ -145,6 +148,8 @@ public class MainGUI
 		JTextArea textArea = new JTextArea();
 		scrollPane.setViewportView(textArea);
 		textArea.setEditable(false);
+		DefaultCaret caret = (DefaultCaret)textArea.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		this.console = textArea;
 		
 		
@@ -300,6 +305,7 @@ public class MainGUI
 	{
 		if (this.loadedFile != null && this.loadedFile.exists())
 		{
+			btnUpload.setEnabled(false);
 			console.append("Starting Upload Process. \n");
 			try 
 			{
@@ -307,7 +313,7 @@ public class MainGUI
 				Connection connect = this.database.connectToDatabase();
 				console.append("Connected. \n");
 				console.append("Creating worker. \n");
-				UploadWorker worker = new UploadWorker(connect, loadedFile, numLines, regionName);
+				UploadWorker worker = new UploadWorker(connect, loadedFile, numLines, regionName, console);
 				worker.addPropertyChangeListener(new PropertyChangeListener() 
 				{	
 					@Override
@@ -320,16 +326,7 @@ public class MainGUI
 							console.append("Upload is " + progress + "% complete \n");
 							if (progress >= 100)
 							{
-								console.append("Disconnecting from server \n");
-								try 
-								{
-									connect.close();
-								} 
-								catch (SQLException e) 
-								{
-									e.printStackTrace();
-								}
-								console.append("Uploaded Completed. \n");
+								btnUpload.setEnabled(true);
 							}
 						}
 						
@@ -341,6 +338,8 @@ public class MainGUI
 			{
 				console.append("Connection to database failed. \n");
 				e.printStackTrace();
+				console.append(e.getMessage() + "\n");
+				btnUpload.setEnabled(true);
 			}
 		}
 	}
@@ -362,28 +361,38 @@ public class MainGUI
 				 console.append("Connected. \n");
 				 Statement query = connect.createStatement();
 				 
-	
-				 query.executeUpdate("CREATE TABLE Weather_Station (id CHAR (20), name CHAR (20), "
-								   + "PRIMARY KEY (id) )");
+				 String station_table = "CREATE TABLE Weather_Station (id CHAR (20), name CHAR (255), "
+						   + "PRIMARY KEY (id) )";
+				 console.append(station_table + "\n");
+				 query.executeUpdate(station_table);
 				 console.append("Weather_Station table added. \n");
-				 query.executeUpdate("CREATE TABLE Location (id CHAR (20), latitude FLOAT (10), longitude FLOAT (10), region CHAR (20), "
-								   + "PRIMARY KEY (latitude, longitude), FOREIGN KEY (id) REFERENCES Weather_Station)");
+				 
+				 String location_table = "CREATE TABLE Location (id CHAR (20), latitude FLOAT (10), longitude FLOAT (10), region CHAR (255), "
+								       + "PRIMARY KEY (latitude, longitude), FOREIGN KEY (id) REFERENCES Weather_Station)";
+				 console.append(location_table + "\n");
+				 query.executeUpdate(location_table);
 				 console.append("Location table added. \n");
-				 query.executeUpdate("CREATE TABLE Daily_Condition (id CHAR (20), conditon_date DATE, sunset_time DATE, sunrise_time DATE, avg_temperature FLOAT (5), min_temperature FLOAT (5), max_temperature FLOAT (5), "
-				 				   + "total_precipitation FLOAT (5), avg_pressure FLOAT (5), avg_wind_speed FLOAT (5), peak_wind_speed FLOAT (5), sustained_wind_speed FLOAT (5), "
-				 				   + "PRIMARY KEY (conditon_date ), FOREIGN KEY (id) REFERENCES Weather_Station)");
+				 
+				 String daily_table = "CREATE TABLE Daily_Condition (id CHAR (20), conditon_date DATE, sunset_time DATE, sunrise_time DATE, avg_temperature FLOAT (5), min_temperature FLOAT (5), max_temperature FLOAT (5), "
+		 				   + "total_precipitation FLOAT (5), avg_pressure FLOAT (5), avg_wind_speed FLOAT (5), peak_wind_speed FLOAT (5), sustained_wind_speed FLOAT (5), "
+		 				   + "PRIMARY KEY (conditon_date ), FOREIGN KEY (id) REFERENCES Weather_Station)";
+				 console.append(daily_table + "\n");
+				 query.executeUpdate(daily_table);
 				 console.append("Daily_Condition table added. \n");
-				 query.executeUpdate("CREATE TABLE Hourly_Condition (id CHAR (20), condition_date DATE, temperature FLOAT (5), precipitation FLOAT (5), wind_speed FLOAT (5), humidity FLOAT (5), pressure FLOAT (5), time DATE, "
-				 				   + "PRIMARY KEY (time), FOREIGN KEY (condition_date) REFERENCES Daily_Condition)");
+				 
+				 String hourly_table = "CREATE TABLE Hourly_Condition (id CHAR (20), condition_date DATE, temperature FLOAT (5), precipitation FLOAT (5), wind_speed FLOAT (5), humidity FLOAT (5), pressure FLOAT (5), time DATE, "
+				 				   + "PRIMARY KEY (time), FOREIGN KEY (condition_date) REFERENCES Daily_Condition)";
+				 console.append(hourly_table + "\n");
+				 query.executeUpdate(hourly_table);
 				 console.append("Hourly_Condition table added. \n");
 				
-			 
 				 console.append("Schema Initilization Completed. \n");
 				 connect.close();
 			 }
 			 catch (SQLException e) 
 			 {
 				 console.append("Connection to database failed or something was wrong with the SQL commands. \n");
+				 console.append(e.getMessage() + "\n");
 				 e.printStackTrace();
 			 }
 		 }
