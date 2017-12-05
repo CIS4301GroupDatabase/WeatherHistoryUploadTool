@@ -230,8 +230,8 @@ public class MainGUI
 	{
 		Object[] option = {"Yes", "No"};
 		
-		 int result = JOptionPane.showOptionDialog(frame, "Are you sure you want to initilize \n the database with the Weather History Schema? \n", 
-				 "Confirm Database Schema Initilization", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
+		 int result = JOptionPane.showOptionDialog(frame, "Are you sure you want to reset the database schema and data? \n This will remove the tables added by this program and will delete all the data in the tables. \n", 
+				 "Confirm Database Schema Reset", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
 		 if (result == 0)
 		 {
 			 // User is sure.
@@ -241,15 +241,15 @@ public class MainGUI
 				 Connection connect = this.database.connectToDatabase();
 				 console.append("Connected. \n"); 
 			 	 Statement statment = connect.createStatement();
-				 console.append("Dropping table: hourly_condition");
+				 console.append("Dropping table: hourly_condition \n");
 				 statment.executeUpdate("DROP TABLE " + "hourly_condition");
-				 console.append("Dropping table: daily_condition");
+				 console.append("Dropping table: daily_condition \n");
 				 statment.executeUpdate("DROP TABLE " + "daily_condition");
-				 console.append("Dropping table: location");
+				 console.append("Dropping table: location \n");
 				 statment.executeUpdate("DROP TABLE " + "location");
-				 console.append("Dropping table: weather_station");
+				 console.append("Dropping table: weather_station \n");
 				 statment.executeUpdate("DROP TABLE " + "weather_station");
-				 console.append("All tables droped from database.");
+				 console.append("All tables droped from database. \n");
 				 connect.close();
 			}
 			catch (SQLException e)
@@ -419,7 +419,7 @@ public class MainGUI
 				 
 				 String daily_table = "CREATE TABLE Daily_Condition (id CHAR (20), condition_date DATE, sunset_time DATE, sunrise_time DATE, avg_temperature FLOAT (5), min_temperature FLOAT (5), max_temperature FLOAT (5), "
 		 				   + "total_precipitation FLOAT (5), avg_pressure FLOAT (5), avg_wind_speed FLOAT (5), peak_wind_speed FLOAT (5), sustained_wind_speed FLOAT (5), "
-		 				   + "PRIMARY KEY (conditon_date ), FOREIGN KEY (id) REFERENCES Weather_Station)";
+		 				   + "PRIMARY KEY (condition_date ), FOREIGN KEY (id) REFERENCES Weather_Station)";
 				 console.append(daily_table + "\n");
 				 query.executeUpdate(daily_table);
 				 console.append("Daily_Condition table added. \n");
