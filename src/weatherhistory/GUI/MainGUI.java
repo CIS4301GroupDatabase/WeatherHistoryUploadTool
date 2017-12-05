@@ -43,7 +43,7 @@ import java.awt.Dimension;
 
 public class MainGUI 
 {
-	private final String version = "1.0";
+	private final String version = "1.1";
 	public JTextArea console;
 	public JProgressBar progressBar;
 	public JFrame frame;
@@ -193,6 +193,16 @@ public class MainGUI
 		});
 		mnDatabase.add(mntmInitilizeSchema);
 		
+		JMenuItem mntmRemoveSchema = new JMenuItem("Remove Schema and Tables");
+		mntmRemoveSchema.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent arg0) 
+			{
+				resetDatabaseSchema();
+			}
+		});
+		mnDatabase.add(mntmRemoveSchema);
+		
 		JMenu mnAbout = new JMenu("About");
 		menuBar.add(mnAbout);
 		
@@ -214,6 +224,40 @@ public class MainGUI
 			}
 		});
 		mnAbout.add(mntmAbout);
+	}
+	
+	private void resetDatabaseSchema()
+	{
+		Object[] option = {"Yes", "No"};
+		
+		 int result = JOptionPane.showOptionDialog(frame, "Are you sure you want to initilize \n the database with the Weather History Schema? \n", 
+				 "Confirm Database Schema Initilization", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
+		 if (result == 0)
+		 {
+			 // User is sure.
+			try
+			{
+				 console.append("Connecting to database. \n");
+				 Connection connect = this.database.connectToDatabase();
+				 console.append("Connected. \n"); 
+			 	 Statement statment = connect.createStatement();
+				 console.append("Dropping table: hourly_condition");
+				 statment.executeUpdate("DROP TABLE " + "hourly_condition");
+				 console.append("Dropping table: daily_condition");
+				 statment.executeUpdate("DROP TABLE " + "daily_condition");
+				 console.append("Dropping table: location");
+				 statment.executeUpdate("DROP TABLE " + "location");
+				 console.append("Dropping table: weather_station");
+				 statment.executeUpdate("DROP TABLE " + "weather_station");
+				 console.append("All tables droped from database.");
+				 connect.close();
+			}
+			catch (SQLException e)
+			{
+				e.printStackTrace();
+			}
+
+		 }
 	}
 
 	private void chooseFile()
@@ -373,7 +417,7 @@ public class MainGUI
 				 query.executeUpdate(location_table);
 				 console.append("Location table added. \n");
 				 
-				 String daily_table = "CREATE TABLE Daily_Condition (id CHAR (20), conditon_date DATE, sunset_time DATE, sunrise_time DATE, avg_temperature FLOAT (5), min_temperature FLOAT (5), max_temperature FLOAT (5), "
+				 String daily_table = "CREATE TABLE Daily_Condition (id CHAR (20), condition_date DATE, sunset_time DATE, sunrise_time DATE, avg_temperature FLOAT (5), min_temperature FLOAT (5), max_temperature FLOAT (5), "
 		 				   + "total_precipitation FLOAT (5), avg_pressure FLOAT (5), avg_wind_speed FLOAT (5), peak_wind_speed FLOAT (5), sustained_wind_speed FLOAT (5), "
 		 				   + "PRIMARY KEY (conditon_date ), FOREIGN KEY (id) REFERENCES Weather_Station)";
 				 console.append(daily_table + "\n");
